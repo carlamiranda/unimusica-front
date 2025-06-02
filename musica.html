@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>Músicas</title>
+</head>
+<body>
+
+    <h1>Adicionar Música</h1>
+
+    <form id="formMusica">
+        <label>
+            Nome da música:<br />
+            <input type="text" id="nome" placeholder="Nome da música" required />
+        </label>
+        <br /><br />
+        <label>
+            Artista:<br />
+            <input type="text" id="artista" placeholder="Artista" required />
+        </label>
+        <br /><br />
+        <label>
+            Ano de lançamento:<br />
+            <input type="number" id="anoLancamento" placeholder="Ano de lançamento" required />
+        </label>
+        <br /><br />
+        <label>
+            Duração:<br />
+            <input type="number" id="duracao" placeholder="Duração" required min="0" />
+        </label>
+        <br /><br />
+        <button type="submit">Adicionar</button>
+    </form>
+
+    <h2>Lista de Músicas</h2>
+    <ul id="listaMusicas"></ul>
+
+<script>
+    const urlBase = 'https://unimusica-production.up.railway.app/musicas';
+
+    async function fetchMusicas() {
+        try {
+            const response = await fetch(urlBase);
+            if (!response.ok) throw new Error('Erro ao buscar músicas');
+            return await response.json();
+        } catch (error) {
+            console.error(error.message);
+            return [];
+        }
+    }
+
+    function mostrarMusicas(musicas) {
+        const lista = document.getElementById('listaMusicas');
+        lista.innerHTML = '';
+        if(musicas.length === 0) {
+            lista.textContent = 'Nenhuma música cadastrada.';
+            return;
+        }
+        musicas.forEach(({ nome, artista, anoLancamento, duracao }) => {
+            const li = document.createElement('li');
+            li.textContent = `${nome} - ${artista} (${anoLancamento}) [${duracao} min]`;
+            lista.appendChild(li);
+        });
+    }
+
+    async function adicionarMusica(musica) {
+        try {
+            const response = await fetch(urlBase, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(musica)
+            });
+            if (!response.ok) throw new Error('Erro ao adicionar música');
+            return await response.json();
+        } catch (error) {
+            console.error(error.message);
+            return null;
+        }
+    }
+
+    document.getElementById('formMusica').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const novaMusica = {
+            nome: document.getElementById('nome').value.trim(),
+            artista: document.getElementById('artista').value.trim(),
+            anoLancamento: parseInt(document.getElementById('anoLancamento').value),
+            duracao: parseInt(document.getElementById('duracao').value)
+        };
+
+        const resultado = await adicionarMusica(novaMusica);
+        if (resultado) {
+            alert('Música adicionada com sucesso!');
+            e.target.reset();
+            const musicasAtualizadas = await fetchMusicas();
+            mostrarMusicas(musicasAtualizadas);
+        } else {
+            alert('Falha ao adicionar música');
+        }
+    });
+
+    fetchMusicas().then(mostrarMusicas);
+</script>
+
+</body>
+</html>
