@@ -1,7 +1,7 @@
 /* style.css */
 
 body {
-  background-color: #121212; 
+  background-color: #000; 
   color: #fff;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
@@ -19,7 +19,7 @@ h1, h2 {
 }
 
 form {
-  background-color: #181818; /* cinza escuro */
+  background-color: #111111; 
   padding: 30px 40px;
   border-radius: 12px;
   width: 360px;
@@ -34,7 +34,7 @@ label {
   flex-direction: column;
   font-weight: 600;
   font-size: 1rem;
-  color: #b3b3b3;
+  color: #fff;
 }
 
 input[type="text"],
@@ -44,10 +44,9 @@ input[type="number"] {
   border: none;
   border-radius: 6px;
   font-size: 1rem;
-  background-color: #282828;
+  background-color: #f7f7f7;
   color: #fff;
   outline: none;
-  transition: background-color 0.3s ease;
 }
 
 input[type="text"]:focus,
@@ -64,8 +63,6 @@ button[type="submit"] {
   border-radius: 50px;
   padding: 14px 0;
   cursor: pointer;
-  box-shadow: 0 6px 12px #1db954aa;
-  transition: background-color 0.3s ease;
 }
 
 button[type="submit"]:hover {
@@ -116,5 +113,5 @@ button.excluir {
 
 button.excluir:hover {
   background-color: #e12525;
-  color: #121212;
+  color: #000;
 }
