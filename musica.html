@@ -85,7 +85,8 @@
             nome: document.getElementById('nome').value.trim(),
             artista: document.getElementById('artista').value.trim(),
             anoLancamento: parseInt(document.getElementById('anoLancamento').value),
-            duracao: parseInt(document.getElementById('duracao').value)
+            duracao: document.getElementById('duracao').value.trim()
+
         };
 
         const resultado = await adicionarMusica(novaMusica);
