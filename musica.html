@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8" />
     <title>Cadastro de Músicas</title>
-    <link rel="stylesheet" href="style.css" />
+    <style>
+        .info {
+            display: inline-block;
+            width: 60%;
+        }
+        button {
+            margin-left: 5px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -13,24 +21,25 @@
             <label>
                 Nome da música:
                 <input type="text" id="nome" placeholder="Nome da música" required />
-            </label>
+            </label><br/>
 
             <label>
                 Artista:
                 <input type="text" id="artista" placeholder="Artista" required />
-            </label>
+            </label><br/>
 
             <label>
                 Ano de lançamento:
                 <input type="number" id="anoLancamento" placeholder="Ano de lançamento" required />
-            </label>
+            </label><br/>
 
             <label>
                 Duração:
                 <input type="number" id="duracao" placeholder="Duração" required min="0" />
-            </label>
+            </label><br/>
 
-            <button type="submit">Adicionar</button>
+            <button type="submit" id="submitBtn">Adicionar</button>
+            <button type="button" id="cancelEditBtn" style="display:none;">Cancelar</button>
         </form>
 
         <h2>Lista de Músicas</h2>
@@ -39,6 +48,8 @@
 
     <script>
         const urlBase = 'https://unimusica-production.up.railway.app/musicas';
+
+        let musicaEditando = null;
 
         async function fetchMusicas() {
             try {
@@ -71,7 +82,13 @@
                 botaoExcluir.classList.add('excluir');
                 botaoExcluir.onclick = () => excluirMusica(musica.id);
 
+                const botaoEditar = document.createElement('button');
+                botaoEditar.textContent = 'Editar';
+                botaoEditar.classList.add('editar');
+                botaoEditar.onclick = () => iniciarEdicao(musica);
+
                 li.appendChild(info);
+                li.appendChild(botaoEditar);
                 li.appendChild(botaoExcluir);
                 lista.appendChild(li);
             });
@@ -92,6 +109,21 @@
             }
         }
 
+        async function editarMusica(id, musicaAtualizada) {
+            try {
+                const response = await fetch(`${urlBase}/${id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(musicaAtualizada)
+                });
+                if (!response.ok) throw new Error('Erro ao editar música');
+                return await response.json();
+            } catch (error) {
+                console.error(error.message);
+                return null;
+            }
+        }
+
         async function excluirMusica(id) {
             const confirmar = confirm('Tem certeza que deseja excluir essa música?');
             if (!confirmar) return;
@@ -102,14 +134,36 @@
                 });
                 if (response.ok) {
                     alert('Música excluída!');
-                    const musicas = await fetchMusicas();
-                    mostrarMusicas(musicas);
+                    carregarMusicas();
                 } else {
                     alert('Erro ao excluir música');
                 }
             } catch (error) {
                 console.error(error.message);
             }
+        }
+
+        function iniciarEdicao(musica) {
+            musicaEditando = musica;
+            document.getElementById('nome').value = musica.nome;
+            document.getElementById('artista').value = musica.artista;
+            document.getElementById('anoLancamento').value = musica.anoLancamento;
+            document.getElementById('duracao').value = musica.duracao;
+
+            document.getElementById('submitBtn').textContent = 'Salvar alteração';
+            document.getElementById('cancelEditBtn').style.display = 'inline-block';
+        }
+
+        function cancelarEdicao() {
+            musicaEditando = null;
+            document.getElementById('formMusica').reset();
+            document.getElementById('submitBtn').textContent = 'Adicionar';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+        }
+
+        async function carregarMusicas() {
+            const musicas = await fetchMusicas();
+            mostrarMusicas(musicas);
         }
 
         document.getElementById('formMusica').addEventListener('submit', async (e) => {
@@ -122,18 +176,30 @@
                 duracao: parseInt(document.getElementById('duracao').value)
             };
 
-            const resultado = await adicionarMusica(novaMusica);
-            if (resultado) {
-                alert('Música adicionada com sucesso!');
-                e.target.reset();
-                const musicasAtualizadas = await fetchMusicas();
-                mostrarMusicas(musicasAtualizadas);
+            if (musicaEditando) {
+                const resultado = await editarMusica(musicaEditando.id, novaMusica);
+                if (resultado) {
+                    alert('Música atualizada com sucesso!');
+                    cancelarEdicao();
+                    carregarMusicas();
+                } else {
+                    alert('Falha ao atualizar música');
+                }
             } else {
-                alert('Falha ao adicionar música');
+                const resultado = await adicionarMusica(novaMusica);
+                if (resultado) {
+                    alert('Música adicionada com sucesso!');
+                    e.target.reset();
+                    carregarMusicas();
+                } else {
+                    alert('Falha ao adicionar música');
+                }
             }
         });
 
-        fetchMusicas().then(mostrarMusicas);
+        document.getElementById('cancelEditBtn').addEventListener('click', cancelarEdicao);
+
+        carregarMusicas();
     </script>
 </body>
 </html>
